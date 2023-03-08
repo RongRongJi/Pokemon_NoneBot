@@ -23,7 +23,6 @@ def lookup_species_by_name(name, table):
     detail = detail + '\n身高: ' + table[name]['height'] + '\n体重: ' + table[name]['weight']
     detail = detail + '\n种族值(hp/攻击/防御/特攻/特防/速度): ' + table[name]['species']
 
-
     msg = image + intro + detail
 
     return msg
