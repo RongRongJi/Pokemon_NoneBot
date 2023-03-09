@@ -14,7 +14,8 @@ cal = on_command('计算器', aliases={'jsq', 'cal'}, rule=to_me())
 @cal.handle()
 async def cal_handle(bot: Bot, event: Event, state: T_State):
 
-    msg = '精灵宝可梦伤害/个体计算器→: http://calc.mypokemon.top/'
+    msg = '''精灵宝可梦伤害/个体计算器→: http://calc.mypokemon.top/
+选择网页最上方的SWSH有较完整的宝可梦数据'''
 
     session_id = event.get_session_id()
     user_id = str(event.get_user_id())
