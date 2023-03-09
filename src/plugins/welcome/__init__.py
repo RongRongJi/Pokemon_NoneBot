@@ -17,8 +17,10 @@ async def welcome_handle(bot: Bot, event: GroupIncreaseNoticeEvent, state: T_Sta
     tjmsg = '#图鉴 xxx : 查询宝可梦图鉴 \n'
     calmsg = '.计算器 .cal  :  宝可梦伤害计算器 \n'
     spdmsg = '.速度线 .speed : pokemmo速度线查询 \n'
+    dicemsg = '.骰子 .dice  : 投骰子 \n'
+    rollmsg = '.投掷 .roll : 0-100随机数字 \n'
     tail = '\n自助机器人仍在开发中,如您有任何好的建议,欢迎私聊留言!'
-    msg = msg + helpmsg + luckmsg + tjmsg + calmsg + spdmsg + tail
+    msg = msg + helpmsg + luckmsg + tjmsg + calmsg + spdmsg + dicemsg + rollmsg + tail
 
 
     # whiteablum
