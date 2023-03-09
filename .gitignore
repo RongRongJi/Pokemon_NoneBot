@@ -142,3 +142,4 @@ dmypy.json
 
 
 src/plugins/gpt3/config.py
+nohup.out

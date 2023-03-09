@@ -11,14 +11,14 @@ from .species import make_species_dict, lookup_species_by_name
 
 species_table = make_species_dict()
 
-query = on_keyword({'#图鉴'}, rule=to_me())
+query = on_keyword({'图鉴'}, rule=to_me())
 
 
 @query.handle()
 async def query_handle(bot: Bot, event: Event, state: T_State):
 
     get_poke_name = str(event.get_message()).strip()
-    get_poke_name = get_poke_name.strip('#图鉴').replace(' ','')
+    get_poke_name = get_poke_name.strip('图鉴').replace(' ','')
 
     msg = lookup_species_by_name(get_poke_name, species_table)
 

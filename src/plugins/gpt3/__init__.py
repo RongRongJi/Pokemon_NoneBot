@@ -28,6 +28,7 @@ class Session:
     def __init__(self, _id):
         self.session_id = _id
         self.preset = default_preset
+        self.preset = '你是猫娘'
         self.conversation = []
         self.reset()
         self.token_record = []

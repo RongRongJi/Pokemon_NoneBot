@@ -9,7 +9,7 @@ import nonebot
 from .load import load_config
 
 
-pvpconfig = on_keyword({'#常用配置'}, rule=to_me())
+pvpconfig = on_keyword({'配置'}, rule=to_me())
 
 
 @pvpconfig.handle()
@@ -19,7 +19,7 @@ async def pvpconfig_handle(bot: Bot, event: Event, state: T_State):
     user_id = str(event.get_user_id())
 
     get_poke_name = str(event.get_message()).strip()
-    get_poke_name = get_poke_name.strip('#常用配置').replace(' ','')
+    get_poke_name = get_poke_name.strip('配置').replace(' ','')
     msg = load_config(get_poke_name)
 
     if 'group' in session_id:

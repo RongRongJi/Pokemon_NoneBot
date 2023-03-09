@@ -10,17 +10,24 @@ welcome = on_notice()
 async def welcome_handle(bot: Bot, event: GroupIncreaseNoticeEvent, state: T_State):
     user = event.get_user_id()
     at_ = '[CQ:at,qq={}]'.format(user)
-    msg = at_ + '欢迎您加入AIP大家庭! 我是AIP公会自助机器人, 您可以根据at我, 并跟上以下指令来呼唤我, 希望可以给您更好的游戏体验!\n'
 
-    helpmsg = '/帮助 /help  : 查看自助机器人的详细指令 \n'
-    luckmsg = '/今日运势 /jrys  :  查看您的今日运势 \n' 
-    tjmsg = '#图鉴 xxx : 查询宝可梦图鉴 \n'
-    calmsg = '.计算器 .cal  :  宝可梦伤害计算器 \n'
-    spdmsg = '.速度线 .speed : pokemmo速度线查询 \n'
-    dicemsg = '.骰子 .dice  : 投骰子 \n'
-    rollmsg = '.投掷 .roll : 0-100随机数字 \n'
-    tail = '\n自助机器人仍在开发中,如您有任何好的建议,欢迎私聊留言!'
-    msg = msg + helpmsg + luckmsg + tjmsg + calmsg + spdmsg + dicemsg + rollmsg + tail
+    msg = at_ + '''欢迎您加入AIP大家庭! 我是AIP公会自助机器人, 您可以根据at我, 并跟上以下指令来呼唤我, 希望可以给您更好的游戏体验!
+帮助 help  : 查看自助机器人的详细指令
+今日运势 jrys  :  查看您的今日运势
+---PVP---
+图鉴+精灵名称 : 查询宝可梦图鉴
+配置+精灵名称 : 查询mmo PVP中常见配置
+计算器 cal  :  宝可梦伤害计算器
+速度线 speed : pokemmo速度线查询
+---日常---
+天王 : 查询mmo中搬天王的配置
+捡垃圾 : 捡垃圾地点推荐
+努力值 : 查看努力值纯点分布
+素材点 : 查看素材纯点分布
+技能点+技能名称 : 查询NPC教学地区
+gpt3 +语句 : 和机器人聊天
+自助机器人仍在开发中,如您有任何好的建议,欢迎私聊留言!'''
+
 
 
     # whiteablum

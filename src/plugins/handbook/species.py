@@ -11,7 +11,7 @@ def make_species_dict():
 
 def lookup_species_by_name(name, table):
     if name not in table:
-        return '您好, 请按照格式 #图鉴 ,后面添加正确的宝可梦名字进行查询哦~'
+        return '您好, 请按照格式 图鉴 +正确的宝可梦名字进行查询哦~'
     
     monster = table[name]
 
