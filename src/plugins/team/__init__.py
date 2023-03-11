@@ -13,7 +13,8 @@ def get_image(name):
     return image
 
 
-teams = ["火狒攻","双蛙雨","飞爆破","蜻蜓攻","狃拉受","龙虾空间"]
+teams = ["火狒攻","双蛙雨","飞爆破","蜻蜓攻","狃拉受",
+    "龙虾空间队","快龙拿波晴","多边攻"]
 
 
 team = on_keyword({'队伍'}, rule=to_me())
@@ -23,15 +24,15 @@ team = on_keyword({'队伍'}, rule=to_me())
 async def team_handle(bot: Bot, event: Event, state: T_State):
 
     team_name = str(event.get_message()).strip()
-    team_name = team_name.strip('队伍').replace(' ','')
+    team_name = team_name.replace('队伍','').replace(' ','')
     print(team_name)
 
     if team_name not in teams:
-        msg = '''很高兴为您推荐Pokemmo PVP队伍,请在[队伍]指令后面添加以下队伍名称来查询队伍详细配置!
+        msg = '''很高兴为您推荐Pokemmo OU分级队伍,请在[队伍]指令后面添加以下队伍名称来查询队伍详细配置!
 ---新手推荐---
-双蛙雨
+火狒攻/双蛙雨
 -----攻队-----
-火狒攻/双蛙雨/飞爆破/蜻蜓攻
+火狒攻/双蛙雨/飞爆破/蜻蜓攻/快龙拿波晴/多边攻
 ----空间队----
 龙虾空间队
 -----受队-----
