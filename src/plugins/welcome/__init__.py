@@ -19,6 +19,7 @@ async def welcome_handle(bot: Bot, event: GroupIncreaseNoticeEvent, state: T_Sta
 配置+精灵名称 : 查询mmo PVP中常见配置
 计算器 cal  :  宝可梦伤害计算器
 速度线 speed : pokemmo速度线查询
+队伍+队伍名称: 查询PVP队伍详细配置
 ---日常---
 天王 : 查询mmo中搬天王的配置
 捡垃圾 : 捡垃圾地点推荐
