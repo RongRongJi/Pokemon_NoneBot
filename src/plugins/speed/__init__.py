@@ -24,7 +24,7 @@ async def speed_handle(bot: Bot, event: Event, state: T_State):
         groupNum = tmpList[1]
 
         # whiteablum
-        whiteablum = ['860189236', '210839336']
+        whiteablum = ['860189236', '210839336', '141778117']
         if groupNum not in whiteablum:
             await speed.finish()
 
