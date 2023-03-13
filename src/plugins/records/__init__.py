@@ -139,6 +139,7 @@ async def record_pool_handle(bot: Bot, event: Event, state: T_State):
 
             ret = r.json()
 
+
             if ret['status'] == -1:
                 msg = '当前无语录库'
             elif ret['status'] == 2:

@@ -32,6 +32,8 @@ def offer_task():
 
         cut_words = jieba.lcut_for_search(content)
 
+        cut_words = list(set(cut_words))
+
         # 更新查询表
         # print(cut_words)
 
@@ -57,32 +59,39 @@ def offer_task():
 
 @app.route('/query', methods=['GET'])
 def query():
-    sentence = request.args.get('sentence')
-    group_id = request.args.get('group_id')
+    try:
+        sentence = request.args.get('sentence')
+        group_id = request.args.get('group_id')
 
-    cut_words = jieba.lcut_for_search(sentence)
+        cut_words = jieba.lcut_for_search(sentence)
 
-    # 查询
-    if group_id not in invertedIndex:
-        return json.dumps({'status': -1})
-    hash_map = invertedIndex[group_id]
+        cut_words = list(set(cut_words))
 
-    count_map = {}
+        # 查询
+        if group_id not in invertedIndex:
+            return json.dumps({'status': -1})
+        hash_map = invertedIndex[group_id]
 
-    result_pool = []
-    for word in cut_words:
-        if word not in hash_map:
+        count_map = {}
+
+        result_pool = []
+        for word in cut_words:
+            if word not in hash_map:
+                return json.dumps({'status': 2})
+            for img in hash_map[word]:
+                if img not in count_map:
+                    count_map[img] = 1
+                else:
+                    count_map[img] += 1
+                if count_map[img] == len(cut_words):
+                    result_pool.append(img)
+        
+        if len(result_pool) == 0:
             return json.dumps({'status': 2})
-        for img in hash_map[word]:
-            if img not in count_map:
-                count_map[img] = 1
-            else:
-                count_map[img] += 1
-            if count_map[img] == len(cut_words):
-                result_pool.append(img)
-    
-    idx = random.randint(0, len(result_pool)-1)
-    return json.dumps({'status': 1, 'msg': result_pool[idx]})
+        idx = random.randint(0, len(result_pool)-1)
+        return json.dumps({'status': 1, 'msg': result_pool[idx]})
+    except Exception as e:
+        return json.dumps({'status': 0, 'msg': str(e)})
 
 
 if __name__ == '__main__':
