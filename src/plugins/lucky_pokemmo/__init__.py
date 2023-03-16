@@ -47,22 +47,30 @@ async def lucky_handle(bot: Bot, event: Event, state: T_State):
     random.seed(seed)
     pvp = random.randint(0, 100)
 
+    # box lucky
+    seed = (int(event.get_user_id()) - 2*un_time)
+    random.seed(seed)
+    box = random.randint(0, 100)
+
     # message
     shineMsg = '闪光运气值: ' + str(shine)
     pvpMsg = '对战运气值: ' + str(pvp)
+    boxMsg = '开盒运气值: ' + str(box)
     luckyMsg = '幸运宝可梦: ' + lucky_pokemon
 
     addition = ""
-    if shine >= 70 and pvp < 70:
-        addition = '今天的您有可能会遇到闪光宝可梦哦！'
-    elif shine >= 70 and pvp >= 70:
+    if shine >= 70 and pvp >= 70 and box >= 70:
         addition = '今天的您诸事皆宜！'
-    elif shine < 70 and pvp >= 70:
+    elif shine >= 70:
+        addition = '今天的您有可能会遇到闪光宝可梦哦！'
+    elif pvp >= 70:
         addition = '今天的您PVP会上大分哦！'
-    elif shine <= 30 and pvp <= 30:
+    elif box >= 70:
+        addition = '今天该开盒了! '
+    elif shine <= 30 and pvp <= 30 and box <= 30:
         addition = '今天的您诸事不宜QAQ,不过'
 
-    msg = pvpMsg + '\n' + shineMsg + '\n' + luckyMsg + '\n' + addition + '祝您今天也在Pokemmo中拥有愉快的一天！'
+    msg = pvpMsg + '\n' + shineMsg + '\n' + boxMsg + '\n' + luckyMsg + '\n' + addition + '祝您今天也在Pokemmo中拥有愉快的一天！'
 
     if 'group' in session_id:
         tmpList = session_id.split('_')

@@ -51,7 +51,7 @@ async def team_handle(bot: Bot, event: Event, state: T_State):
         groupNum = tmpList[1]
 
         # whiteablum
-        whiteablum = ['860189236', '210839336', '624627458','1078694756']
+        whiteablum = ['860189236', '210839336', '624627458','1078694756','141778117']
         if groupNum not in whiteablum:
             await team.finish()
 
