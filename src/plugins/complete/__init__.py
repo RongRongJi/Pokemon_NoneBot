@@ -152,7 +152,7 @@ async def cp_ward_handle(bot: Bot, event: Event, state: T_State):
     await cp_ward.finish()
 
 
-cp_walk = on_keyword({'赛程'}, rule=to_me())
+cp_walk = on_keyword({'赛程','赛果','结果'}, rule=to_me())
 
 @cp_walk.handle()
 async def cp_walk_handle(bot: Bot, event: Event, state: T_State):
@@ -162,19 +162,19 @@ async def cp_walk_handle(bot: Bot, event: Event, state: T_State):
 
     msg = '''
 【瞻彼淇奥，绿竹猗猗】
-欢迎参加AIP公会PVP OU分级比赛, 赛程表如下: [CQ:image,file=match.png]
+详细赛果如下: [CQ:image,file=match.png]
 ------
-A组第一轮/B组第一轮: 3月18日 20:00
-C组第一轮/D组第一轮: 3月18日 20:30
-A组第二轮/B组第二轮: 3月18日 21:00
-C组第二轮/D组第二轮: 3月18日 21:30
+冠军:   hklaasss
+亚军:   qqqianx
+季军:   Cbco
+第四名: TQAAQT
 ------
-八强: 3月19日 20:00
-四强: 3月19日 20:30
-3、4名决赛: 3月19日 21:00
-决赛: 3月19日 21:30
+特别奖励排名
+1. Cbco	22pt
+2. TQAAQT 21pt
+3. qqqianx 17pt
 ------
-感谢您使用AIP自助机器人, 您可以at我并发送"帮助"来查看其它功能, 祝您游戏愉快!'''
+祝贺比赛顺利结束，恭喜以上所有选手，也恭喜所有选手'''
 
     if 'group' in session_id:
         tmpList = session_id.split('_')

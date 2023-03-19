@@ -1,4 +1,4 @@
-from nonebot import on_command, on_keyword, on_startswith
+from nonebot import on_command, on_keyword, on_startswith, get_driver
 from nonebot.rule import to_me
 from nonebot.matcher import Matcher
 from nonebot.adapters import Message
@@ -14,23 +14,32 @@ import random
 import subprocess
 import sys
 import os
+from .task import offer, query
+from .config import Config
+from nonebot.log import logger
 
 
-subprocess.Popen([sys.executable, "src/plugins/records/task_server.py"])
+plugin_config = Config.parse_obj(get_driver().config)
 
 
 record_dict = {}
+inverted_index = {}
 
-with open('src/plugins/records/record.json', 'r') as fr:
-    record_dict = json.load(fr)
+# 首次运行时导入表
+try:
+    with open(plugin_config.record_path, 'r') as fr:
+        record_dict = json.load(fr)
+
+    with open(plugin_config.inverted_index_path, 'r') as fi:
+        inverted_index = json.load(fi)
+    logger.info('nonebot_plugin_quote路径配置成功')
+except Exception as e:
+    logger.warning('未配置record/inverted_index,或路径不对,请在config.py中正确配置')
 
 
  # 语录库
 record = on_command("开始上传", aliases={"上传", '上传开始'}, priority=10, block=True, rule=to_me())
 end_conversation = ['stop', '结束', '上传截图', '结束上传']
-
-# 配置
-cqhttp_path = '/home/sr/go-cqhttp/'
 
 
 @record.handle()
@@ -48,8 +57,12 @@ def img_to_base64(img_path):
         b64 = base64.b64encode(read.read())
     return b64
 
+
 @record.got("prompt", prompt="请上传语录(图片形式)")
 async def record_upload(bot: Bot, event: MessageEvent, prompt: Message = Arg(), msg: Message = Arg("prompt")):
+
+    global inverted_index
+    global record_dict
 
     session_id = event.get_session_id()
     message_id = event.message_id
@@ -70,7 +83,7 @@ async def record_upload(bot: Bot, event: MessageEvent, prompt: Message = Arg(), 
     # 下载图片
     url_model = r"\[CQ:image,file=[\S]*,subType=[\S]*,url=(.*?)\]"
     url = re.findall(url_model, str(msg))[0]
-    path = 'src/plugins/records/images/' + files[0] + '.jpg'
+    path = plugin_config.tmp_dir + files[0] + '.jpg'
     with open(path, 'wb') as f:
         img = requests.get(url).content
         f.write(img)
@@ -79,17 +92,13 @@ async def record_upload(bot: Bot, event: MessageEvent, prompt: Message = Arg(), 
     # 删除图片
     os.remove(path)
 
-
     if 'group' in session_id:
         tmpList = session_id.split('_')
         groupNum = tmpList[1]
 
         resp['file'] = resp['file'].replace('data/','../')
 
-        res = requests.post(url='http://127.0.0.1:5555/offer', 
-                data={'group_id': groupNum,
-                    'img_file': resp['file'],
-                    'content': img_b64})  
+        inverted_index = offer(groupNum, resp['file'], img_b64, inverted_index, plugin_config.ocr_url)
 
         if groupNum not in record_dict:
             record_dict[groupNum] = [resp['file']]
@@ -98,8 +107,11 @@ async def record_upload(bot: Bot, event: MessageEvent, prompt: Message = Arg(), 
                 record_dict[groupNum].append(resp['file'])
 
 
-        with open('src/plugins/records/record.json', 'w') as f:
-            json.dump(record_dict, f,indent=2,separators=(',', ': '),ensure_ascii=False)
+        with open(plugin_config.record_path, 'w') as f:
+            json.dump(record_dict, f, indent=2, separators=(',', ': '), ensure_ascii=False)
+
+        with open(plugin_config.inverted_index_path, 'w') as fc:
+            json.dump(inverted_index, fc, indent=2, separators=(',',': '), ensure_ascii=False)
 
     # await record.reject_arg('prompt', MessageSegment.reply(message_id) + '上传成功')
     await bot.call_api('send_group_msg', **{
@@ -112,11 +124,15 @@ async def record_upload(bot: Bot, event: MessageEvent, prompt: Message = Arg(), 
 
 record_pool = on_startswith('语录', priority=2, block=True, rule=to_me())
 
+
 @record_pool.handle()
 async def record_pool_handle(bot: Bot, event: Event, state: T_State):
 
     session_id = event.get_session_id()
     user_id = str(event.get_user_id())
+
+    global inverted_index
+    global record_dict
 
     if 'group' in session_id:
 
@@ -134,11 +150,7 @@ async def record_pool_handle(bot: Bot, event: Event, state: T_State):
                 idx = random.randint(0, length-1)
                 msg = '[CQ:image,file={}]'.format(record_dict[groupNum][idx])
         else:
-            r = requests.get('http://127.0.0.1:5555/query', 
-                {'group_id':groupNum, 'sentence': search_info})
-
-            ret = r.json()
-
+            ret = query(search_info, groupNum, inverted_index)
 
             if ret['status'] == -1:
                 msg = '当前无语录库'
