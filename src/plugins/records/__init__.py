@@ -14,7 +14,7 @@ import random
 import subprocess
 import sys
 import os
-from .task import offer, query
+from .task import offer, query, delete
 from .config import Config
 from nonebot.log import logger
 
@@ -191,3 +191,76 @@ async def record_help_handle(bot: Bot, event: Event, state: T_State):
         })
 
     await record_help.finish()
+
+
+delete_record = on_command('删除', aliases={'delete'}, rule=to_me())
+
+@delete_record.handle()
+async def delete_record_handle(bot: Bot, event: Event, state: T_State):
+
+    global inverted_index
+    global record_dict
+
+    session_id = event.get_session_id()
+    user_id = str(event.get_user_id())
+
+    if 'group' not in session_id:
+        await delete_record.finish()
+    
+    groupNum = session_id.split('_')[1]
+    if groupNum not in plugin_config.quote_superuser or user_id not in plugin_config.quote_superuser[groupNum]:  
+        await bot.call_api('send_group_msg', **{
+            'group_id':int(groupNum),
+            'message': '[CQ:at,qq='+user_id+'] 非常抱歉, 您没有删除权限TUT'
+        })
+        await delete_record.finish()
+
+    raw_message = str(event)
+
+    errMsg = '请回复需要删除的语录, 并输入删除指令'
+
+    rt = r"\[reply:id=(.*?)]"
+    ids = re.findall(rt, str(raw_message))
+
+    if len(ids) == 0:
+        await bot.call_api('send_group_msg', **{
+            'group_id':int(groupNum),
+            'message': '[CQ:at,qq='+user_id+']' + errMsg
+        })
+        await delete_record.finish()
+
+    resp = await bot.get_msg(message_id=ids[0])
+
+    img_msg = str(resp['message'])
+
+    rt = r"\[CQ:image,file=(.*?),subType=[\S]*,url=[\S]*\]"
+    imgs = re.findall(rt, img_msg)
+
+    if len(imgs) == 0:
+        await bot.call_api('send_group_msg', **{
+            'group_id':int(groupNum),
+            'message': '[CQ:at,qq='+user_id+']' + errMsg
+        })
+        await delete_record.finish()
+
+    img_name = '../cache/' + imgs[0] + '.jpg'
+    
+    # 搜索
+    is_Delete, record_dict, inverted_index = delete(img_name, groupNum, record_dict, inverted_index)
+
+    if is_Delete:
+        with open(plugin_config.record_path, 'w') as f:
+            json.dump(record_dict, f, indent=2, separators=(',', ': '), ensure_ascii=False)
+        with open(plugin_config.inverted_index_path, 'w') as fc:
+            json.dump(inverted_index, fc, indent=2, separators=(',',': '), ensure_ascii=False)
+        msg = '删除成功'
+    else:
+        msg = '该图不在语录库中'
+
+
+    await bot.call_api('send_group_msg', **{
+        'group_id':int(groupNum),
+        'message': '[CQ:at,qq='+user_id+']' + msg
+    })
+
+    await delete_record.finish()

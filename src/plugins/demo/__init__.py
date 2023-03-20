@@ -26,22 +26,30 @@ async def demo_handle(bot: Bot, event: Event, state: T_State):
     user_id = str(event.get_user_id())
     raw_message = str(event)
 
-    rt = r"\[reply:id=(.*?)]"
+    # rt = r"\[reply:id=(.*?)]"
+    # ids = re.findall(rt, str(raw_message))
 
-    ids = re.findall(rt, str(raw_message))
+    # resp = await bot.get_msg(message_id=ids[0])
 
-    # resp =  await bot.call_api('get_image',  **{'file':files[0]})
-    resp = await bot.get_msg(message_id=ids[0])
-    # resp = await bot.call_api('/get_msg', **{
-    #     'message_id': ids[0]
-    # })
+    # img_msg = str(resp['message'])
 
-    msg = str(resp['message'])
-    print('---------------', msg)
+    rt = r"\[CQ:image,file=(.*?),subType=[\S]*,url=[\S]*\]"
+    img_name = re.findall(rt, str(event.get_message()))
+    # msg = img_name[0]
 
-    
+    resp = await bot.ocr_image(image=img_name[0])
 
-    
+    msg = ''
+    for text in resp['texts']:
+        msg += text['text'] + '\n'
+
+    resp = await bot.call_api('.get_word_slices', **{
+            'content': msg
+        })
+    msg = ''
+    for text in resp['slices']:
+        msg += text + '/'
+
     if 'group' in session_id:
         tmpList = session_id.split('_')
         groupNum = tmpList[1]

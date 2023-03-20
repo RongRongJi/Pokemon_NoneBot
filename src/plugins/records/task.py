@@ -54,3 +54,24 @@ def query(sentence, group_id, inverted_index):
         return {'status': 2}
     idx = random.randint(0, len(result_pool)-1)
     return {'status': 1, 'msg': result_pool[idx]}
+
+
+# 删除内容
+def delete(img_name, group_id, record, inverted_index):
+    check = False
+    for _,arr in inverted_index[group_id].items():
+        check = _remove(arr, img_name) or check
+    
+    check = _remove(record[group_id], img_name) or check
+
+    return check, record, inverted_index
+
+
+def _remove(arr, ele):
+    try:
+        arr.remove(ele)
+        return True
+    except ValueError:
+        return False
+
+
