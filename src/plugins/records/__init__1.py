@@ -3,18 +3,17 @@ from nonebot.rule import to_me
 from nonebot.matcher import Matcher
 from nonebot.adapters import Message
 from nonebot.params import Arg, ArgPlainText, CommandArg, Matcher
-from nonebot.adapters.onebot.v11 import Bot, Event, Message, MessageEvent, PrivateMessageEvent, MessageSegment, GroupMessageEvent
+from nonebot.adapters.onebot.v11 import Bot, Event, Message, MessageEvent, PrivateMessageEvent, MessageSegment, GroupMessageEvent, exception
 from nonebot.typing import T_State  
 import nonebot
 import re
 import json
 import base64
-import requests
 import random
 import subprocess
 import sys
 import os
-from .task import offer, query, delete
+from .task import offer, query, delete, handle_ocr_text
 from .config import Config
 from nonebot.log import logger
 
@@ -52,12 +51,6 @@ async def _(event: MessageEvent, args: Message = CommandArg()):
         record.set_arg("prompt", message=args)
 
 
-def img_to_base64(img_path):
-    with open(img_path, 'rb')as read:
-        b64 = base64.b64encode(read.read())
-    return b64
-
-
 @record.got("prompt", prompt="请上传语录(图片形式)")
 async def record_upload(bot: Bot, event: MessageEvent, prompt: Message = Arg(), msg: Message = Arg("prompt")):
 
@@ -80,17 +73,14 @@ async def record_upload(bot: Bot, event: MessageEvent, prompt: Message = Arg(), 
 
     resp =  await bot.call_api('get_image',  **{'file':files[0]})
 
-    # 下载图片
-    url_model = r"\[CQ:image,file=[\S]*,subType=[\S]*,url=(.*?)\]"
-    url = re.findall(url_model, str(msg))[0]
-    path = plugin_config.tmp_dir + files[0] + '.jpg'
-    with open(path, 'wb') as f:
-        img = requests.get(url).content
-        f.write(img)
-    # 转base64
-    img_b64 = img_to_base64(path)
-    # 删除图片
-    os.remove(path)
+    # OCR分词
+    try:
+        ocr = await bot.ocr_image(image=files[0])
+
+        ocr_content = handle_ocr_text(ocr['texts'])
+    except exception.ActionFailed:
+        ocr_content = ''
+
 
     if 'group' in session_id:
         tmpList = session_id.split('_')
@@ -98,7 +88,7 @@ async def record_upload(bot: Bot, event: MessageEvent, prompt: Message = Arg(), 
 
         resp['file'] = resp['file'].replace('data/','../')
 
-        inverted_index = offer(groupNum, resp['file'], img_b64, inverted_index, plugin_config.ocr_url)
+        inverted_index = offer(groupNum, resp['file'], ocr_content, inverted_index)
 
         if groupNum not in record_dict:
             record_dict[groupNum] = [resp['file']]
@@ -208,12 +198,13 @@ async def delete_record_handle(bot: Bot, event: Event, state: T_State):
         await delete_record.finish()
     
     groupNum = session_id.split('_')[1]
-    if groupNum not in plugin_config.quote_superuser or user_id not in plugin_config.quote_superuser[groupNum]:  
-        await bot.call_api('send_group_msg', **{
-            'group_id':int(groupNum),
-            'message': '[CQ:at,qq='+user_id+'] 非常抱歉, 您没有删除权限TUT'
-        })
-        await delete_record.finish()
+    if user_id not in plugin_config.global_superuser:
+        if groupNum not in plugin_config.quote_superuser or user_id not in plugin_config.quote_superuser[groupNum]:  
+            await bot.call_api('send_group_msg', **{
+                'group_id':int(groupNum),
+                'message': '[CQ:at,qq='+user_id+'] 非常抱歉, 您没有删除权限TUT'
+            })
+            await delete_record.finish()
 
     raw_message = str(event)
 
@@ -233,6 +224,8 @@ async def delete_record_handle(bot: Bot, event: Event, state: T_State):
 
     img_msg = str(resp['message'])
 
+    print(img_msg)
+
     rt = r"\[CQ:image,file=(.*?),subType=[\S]*,url=[\S]*\]"
     imgs = re.findall(rt, img_msg)
 
@@ -243,10 +236,14 @@ async def delete_record_handle(bot: Bot, event: Event, state: T_State):
         })
         await delete_record.finish()
 
-    img_name = '../cache/' + imgs[0] + '.jpg'
+    # 获取文件名
+    # resp =  await bot.call_api('get_image',  **{'file':imgs[0]})
+    # resp['file'] = resp['file'].replace('data/','../')
+
+    # print(resp['file'])
     
     # 搜索
-    is_Delete, record_dict, inverted_index = delete(img_name, groupNum, record_dict, inverted_index)
+    is_Delete, record_dict, inverted_index = delete(imgs[0], groupNum, record_dict, inverted_index)
 
     if is_Delete:
         with open(plugin_config.record_path, 'w') as f:

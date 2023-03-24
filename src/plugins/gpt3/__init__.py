@@ -28,7 +28,7 @@ class Session:
     def __init__(self, _id):
         self.session_id = _id
         self.preset = default_preset
-        self.preset = '你是猫娘'
+        self.preset = ''
         self.conversation = []
         self.reset()
         self.token_record = []
@@ -165,8 +165,8 @@ switch_mode = on_command("全局会话", priority=10, block=True, **need_at)
 
 @switch_mode.handle()
 async def _(matcher: Matcher, event: MessageEvent):
-    if not checker(event):
-        return
+    # if not checker(event):
+    #     return
 
     global public_mode
     public_mode = not public_mode
@@ -196,18 +196,34 @@ async def _(matcher: Matcher):
 
 reset_c = on_command("重置会话", priority=10, block=True, **need_at)
 
-
 @reset_c.handle()
 async def _(matcher: Matcher, event: MessageEvent):
     session_id = event.get_session_id()
+    # if public_mode:
+    #     if not checker(event):
+    #         await matcher.finish("公共模式下，仅管理员可以重置会话")
+    #     get_user_session(public_sessionID).reset()
+    # else:
+    #     get_user_session(session_id).reset()
 
+    get_user_session(session_id).reset()
+    user_lock[session_id] = False
+    await matcher.finish("会话已重置")
+
+reset_pc = on_command("重置全局会话", priority=10, block=True, **need_at)
+
+@reset_pc.handle()
+async def _(matcher: Matcher, event: MessageEvent):
     if public_mode:
-        if not checker(event):
-            await matcher.finish("公共模式下，仅管理员可以重置会话")
+        # if not checker(event):
+        #     await matcher.finish("公共模式下，仅管理员可以重置会话")
         get_user_session(public_sessionID).reset()
     else:
-        get_user_session(session_id).reset()
-    await matcher.finish("会话已重置")
+        await matcher.finish("未开启全局会话")
+    await matcher.finish("全局会话已重置")
+            
+
+
 
 
 now_model = on_command("当前模型", priority=10, block=True, **need_at)
@@ -317,7 +333,7 @@ async def _(matcher: Matcher, event: MessageEvent, arg: Message = CommandArg()):
         return
 
     if session_id in user_lock and user_lock[session_id]:
-        await matcher.finish("消息太快啦～请稍后", at_sender=True)
+        await matcher.finish("消息太快啦～请稍后。如果想要停止前面的内容，请@我并加上【重置会话】", at_sender=True)
 
     user_lock[session_id] = True
     resp = await get_user_session(session_id).get_chat_response(msg, checker(event))
