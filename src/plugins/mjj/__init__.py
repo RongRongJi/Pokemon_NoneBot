@@ -209,3 +209,51 @@ async def getallmjj():
         'group_id':int(group_id),
         'message': msg
     })
+
+
+mjjcheck = on_command('sjmjj', aliases={'烧鸡没鸡鸡'})
+
+@mjjcheck.handle()
+async def mjjcheck_handle(bot: Bot, event: Event, state: T_State):
+
+    global mjjall_dic
+
+    session_id = event.get_session_id()
+
+    if 'group' not in session_id:
+        await mjjcheck.finish()
+
+    group_id = session_id.split('_')[1]
+    user_qq = event.get_user_id()
+
+    # whiteablum
+    whiteablum = ['624627458','210839336']
+    if group_id not in whiteablum:
+        await mjjcheck.finish()
+
+    user_info = await bot.get_group_member_info(group_id=group_id, user_id=user_qq, no_cache=True)
+    if user_info['card'] != '':
+        nickname = user_info['card']
+    else:
+        nickname = user_info['nickname']
+
+    if nickname not in mjjall_dic['rank'][group_id]:
+        now = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+        today = datetime.datetime(now.year, now.month, now.day)
+        un_time = time.mktime(today.timetuple())
+        seed = int(event.get_user_id()) - un_time
+        random.seed(seed)
+        mjjvalue = random.randint(0, 100)
+        mjjall_dic['rank'][group_id][nickname] = mjjvalue
+    else:
+        mjjall_dic['rank'][group_id][nickname] = int((mjjall_dic['rank'][group_id][nickname]/10)**2)
+    
+    with open('src/plugins/mjj/data.json', 'w') as fw:
+        json.dump(mjjall_dic, fw, indent=2, separators=(',',': '), ensure_ascii=False)
+
+    await bot.call_api('send_group_msg', **{
+        'group_id':int(group_id),
+        'message': '[CQ:at,qq='+str(user_qq)+'] 今日鸡鸡值已削减'
+    })
+
+    await mjjcheck.finish()
