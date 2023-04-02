@@ -65,7 +65,7 @@ async def jrmjj_handle(bot: Bot, event: Event, state: T_State):
     today = datetime.datetime(now.year, now.month, now.day)
     un_time = time.mktime(today.timetuple())
 
-    seed = int(event.get_user_id()) - un_time
+    seed = int(event.get_user_id()) / un_time
     random.seed(seed)
     mjjvalue = random.randint(0, 100)
 
@@ -185,7 +185,7 @@ async def getallmjj():
         today = datetime.datetime(now.year, now.month, now.day)
         un_time = time.mktime(today.timetuple())
 
-        seed = user['user_id'] - un_time
+        seed = user['user_id'] / un_time
         random.seed(seed)
         mjjvalue = random.randint(0, 100)
 
@@ -199,11 +199,17 @@ async def getallmjj():
 
     msg = '天光猛烈，万物显形！时辰已到, 今日有鸡鸡榜单:'
     cur_rank = 1
+    average = 0
     for i in range(0, len(sorted_d)):
         if i!=0 and sorted_d[i][1] != sorted_d[i-1][1]:
             cur_rank = i+1
+        average += sorted_d[i][1]
         tmpMsg = '\n{}. {} {}'.format(cur_rank, sorted_d[i][1], sorted_d[i][0])
         msg += tmpMsg
+    
+    average = int(average / len(sorted_d))
+    msg += '\n==========\n'
+    msg += '群平均鸡鸡值为{}, 今日最没鸡鸡的人是{}, 低于平均水平{}'.format(average, sorted_d[-1][0], average-sorted_d[-1][1])
     
     await bot.call_api('send_group_msg', **{
         'group_id':int(group_id),
@@ -211,49 +217,49 @@ async def getallmjj():
     })
 
 
-mjjcheck = on_command('sjmjj', aliases={'烧鸡没鸡鸡'})
+# mjjcheck = on_command('sjmjj', aliases={'烧鸡没鸡鸡'})
 
-@mjjcheck.handle()
-async def mjjcheck_handle(bot: Bot, event: Event, state: T_State):
+# @mjjcheck.handle()
+# async def mjjcheck_handle(bot: Bot, event: Event, state: T_State):
 
-    global mjjall_dic
+#     global mjjall_dic
 
-    session_id = event.get_session_id()
+#     session_id = event.get_session_id()
 
-    if 'group' not in session_id:
-        await mjjcheck.finish()
+#     if 'group' not in session_id:
+#         await mjjcheck.finish()
 
-    group_id = session_id.split('_')[1]
-    user_qq = event.get_user_id()
+#     group_id = session_id.split('_')[1]
+#     user_qq = event.get_user_id()
 
-    # whiteablum
-    whiteablum = ['624627458','210839336']
-    if group_id not in whiteablum:
-        await mjjcheck.finish()
+#     # whiteablum
+#     whiteablum = ['624627458','210839336']
+#     if group_id not in whiteablum:
+#         await mjjcheck.finish()
 
-    user_info = await bot.get_group_member_info(group_id=group_id, user_id=user_qq, no_cache=True)
-    if user_info['card'] != '':
-        nickname = user_info['card']
-    else:
-        nickname = user_info['nickname']
+#     user_info = await bot.get_group_member_info(group_id=group_id, user_id=user_qq, no_cache=True)
+#     if user_info['card'] != '':
+#         nickname = user_info['card']
+#     else:
+#         nickname = user_info['nickname']
 
-    if nickname not in mjjall_dic['rank'][group_id]:
-        now = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-        today = datetime.datetime(now.year, now.month, now.day)
-        un_time = time.mktime(today.timetuple())
-        seed = int(event.get_user_id()) - un_time
-        random.seed(seed)
-        mjjvalue = random.randint(0, 100)
-        mjjall_dic['rank'][group_id][nickname] = mjjvalue
-    else:
-        mjjall_dic['rank'][group_id][nickname] = int((mjjall_dic['rank'][group_id][nickname]/10)**2)
+#     if nickname not in mjjall_dic['rank'][group_id]:
+#         now = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+#         today = datetime.datetime(now.year, now.month, now.day)
+#         un_time = time.mktime(today.timetuple())
+#         seed = int(event.get_user_id()) - un_time
+#         random.seed(seed)
+#         mjjvalue = random.randint(0, 100)
+#         mjjall_dic['rank'][group_id][nickname] = mjjvalue
+#     else:
+#         mjjall_dic['rank'][group_id][nickname] = int((mjjall_dic['rank'][group_id][nickname]/10)**2)
     
-    with open('src/plugins/mjj/data.json', 'w') as fw:
-        json.dump(mjjall_dic, fw, indent=2, separators=(',',': '), ensure_ascii=False)
+#     with open('src/plugins/mjj/data.json', 'w') as fw:
+#         json.dump(mjjall_dic, fw, indent=2, separators=(',',': '), ensure_ascii=False)
 
-    await bot.call_api('send_group_msg', **{
-        'group_id':int(group_id),
-        'message': '[CQ:at,qq='+str(user_qq)+'] 今日鸡鸡值已削减'
-    })
+#     await bot.call_api('send_group_msg', **{
+#         'group_id':int(group_id),
+#         'message': '[CQ:at,qq='+str(user_qq)+'] 今日鸡鸡值已削减'
+#     })
 
-    await mjjcheck.finish()
+#     await mjjcheck.finish()
