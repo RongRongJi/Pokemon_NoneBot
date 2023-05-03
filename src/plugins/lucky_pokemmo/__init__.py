@@ -77,7 +77,7 @@ async def lucky_handle(bot: Bot, event: Event, state: T_State):
         groupNum = tmpList[1]
 
         # whiteablum
-        whiteablum = ['860189236', '210839336', '141778117']
+        whiteablum = ['860189236', '210839336', '523485781']
         if groupNum not in whiteablum:
             await lucky.finish()
 
@@ -93,3 +93,63 @@ async def lucky_handle(bot: Bot, event: Event, state: T_State):
     await lucky.finish()
 
 
+
+daily_draw = on_command('今日抽奖', aliases={'jrcj','抽奖'}, rule=to_me())
+
+@daily_draw.handle()
+async def daily_draw_handle(bot: Bot, event: Event, state: T_State):
+
+    session_id = event.get_session_id()
+    print(session_id)
+
+    # 精灵球 随机v素材 随机礼袋 随机药品 随机服装 幸运精灵
+    user_id = str(event.get_user_id())
+    now = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    today = datetime.datetime(now.year, now.month, now.day)
+    un_time = time.mktime(today.timetuple())
+    sj = '{}-{}-{}'.format(now.year, now.month, now.day)
+
+
+    # box lucky
+    seed = (int(event.get_user_id()) * un_time)
+    random.seed(seed)
+    box = random.randint(0, 100)
+
+    if box >=0 and box < 18:
+        msg = '精灵球'
+    elif box < 36:
+        msg = '随机v素材'
+    elif box < 54:
+        msg = '随机礼袋'
+    elif box < 72:
+        msg = '随机药品'
+    elif box < 90:
+        msg = '随机服装'
+    else:
+        msg = '幸运精灵'
+
+
+    if 'group' in session_id:
+        tmpList = session_id.split('_')
+        groupNum = tmpList[1]
+
+        # whiteablum
+        whiteablum = ['860189236', '210839336']
+        if groupNum not in whiteablum:
+            await daily_draw.finish()
+
+        if now.hour >= 22 or now.hour < 8:
+            await bot.call_api('send_group_msg', **{
+            'group_id':int(groupNum),
+            'message': '[CQ:at,qq='+user_id+']'+
+            ' 抽奖的营业时间为每天8:00-22:00~'
+            })
+            await daily_draw.finish()
+
+        await bot.call_api('send_group_msg', **{
+            'group_id':int(groupNum),
+            'message': '[CQ:at,qq='+user_id+']'+
+            ' 恭喜您训练师！今天(' + sj + ')您的抽奖结果是：'+msg+ '\n请截图并于当天找羽墨(QQ:2090013496)进行兑奖，逾期作废'
+        })
+
+    await daily_draw.finish()

@@ -26,7 +26,8 @@ async def welcome_handle(bot: Bot, event: GroupIncreaseNoticeEvent, state: T_Sta
 努力值 : 查看努力值纯点分布
 素材点 : 查看素材纯点分布
 技能点+技能名称 : 查询NPC教学地区
-gpt3 +语句 : 和机器人聊天
+行情 : 查看交易行当前波动较大的物品行情
+道具名+价格 : 查看当前交易行指定道具价格情况
 自助机器人仍在开发中,如您有任何好的建议,欢迎私聊留言!'''
 
 

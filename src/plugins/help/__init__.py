@@ -37,13 +37,15 @@ async def help_handle(bot: Bot, event: Event, state: T_State):
 努力值 : 查看努力值纯点分布
 素材点 : 查看素材纯点分布
 技能点+技能名称 : 查询NPC教学地区
+行情 : 查看交易行当前波动较大的物品行情
+道具名+价格 : 查看当前交易行指定道具价格情况
 '''
 
     dicemsg = '骰子 dice  : 投骰子 \n'
     rollmsg = '投掷 roll : 0-100随机数字 \n'
     gptmsg = 'gpt3 +语句 : 和机器人聊天 \n'
     # casualmsg = dicemsg + rollmsg + gptmsg
-    casualmsg = gptmsg
+    casualmsg = ''
     
     tail = '\n自助机器人仍在开发中,如您有任何好的建议,欢迎私聊留言!'
 

@@ -34,8 +34,9 @@ async def get_chat_response(proxy: str, key: str, preset: str, conversation: lis
     client = httpx.AsyncClient(proxies=proxies, timeout=None)
     try:
         response = await client.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {key}"},
+            # "https://api.openai.com/v1/chat/completions",
+            "https://od.openai.azure.com/openai/deployments/gpt3/chat/completions?api-version=2023-03-15-preview",
+            headers={"Content-Type": "application/json", "api-key": key},
             json={
                 "model": gpt3_model,
                 "messages": system + conversation,
